@@ -1,0 +1,406 @@
+---
+title: 'CSCI E-63C: Final Exam'
+output:
+  html_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(14)
+```
+
+# Preface
+
+For the final exam/project we will develop classification models using several approaches and compare their performance on a new dataset -- so-called "Census Income" from UCI ML.  It is available at UCI ML web site, but so that we are not at the mercy of UCI ML availability, there is also a local copy of it in our website in Canvas as a zip-archive of all associated files.  Among other things, the description for this dataset also presents performance (prediction accuracy) observed by the dataset providers using variety of modeling techniques -- this supplies a context for the errors of the models we will develop here.
+
+Please note that the original data has been split up into training and test subsets, but there doesn't seem to be anything particular about that split, so we might want to pool those two datasets together and split them into training and test as necessary ourselves. As you do that, please check that the attribute levels are consistent between those two files.  For instance, the categorized income levels are indicated using slightly different notation in their training and test data.   By now it should be quite straightforward for you to correct that when you pool them together.
+
+Also, please note that there is non-negligible number of rows with missing values that for most analyses cannot be included without modification in the computation.  Please decide how you want to handle them and proceed accordingly.  The simplest and perfectly acceptable approach would be to exclude those observations from the rest of the analyses, but if you have time and inclination to investigate the impact of imputing them by various means, you are welcome to try.
+
+Attribute called "final weight" in the dataset description represents demographic weighting of these observations.  Please disregard it for the purposes of this assignment.
+
+Additionally, several attributes in this dataset are categorical variables with more than two levels (e.g. native country, occupation, etc.).  Please make sure to translate them into corresponding sets of dummy indicator variables for the methods that require such conversion (e.g. PCA) -- R function `model.matrix` can be convenient for this, instead of generating those 0/1 indicators for each level of the factor manually (which is still perfectly fine).  Some of those multi-level factors contain very sparsely populated categories -- e.g. occupation "Armed-Forces" or work class "Never-worked" -- it is your call whether you want to keep those observations in the data or exclude also on the basis that there is not enough data to adequately capture the impact of those categories. Feel free to experiment away!
+
+Among the multi-level categorical attributes, native country attribute has the largest number of levels -- several folds higher than any other attribute in this dataset -- some of which have relatively few observations.  This associated increase in dimensionality of the data may not be accompanied by a corresponding gain of resolution -- e.g. would we expect this data to support the *difference* in income between descendants from Peru and Nicaragua, for example, or from Cambodia and Laos?  Please feel free to evaluate the impact of inclusion and/or omission of this attribute in/from the model and/or discretizing it differently (e.g. US/non-US, etc.).
+
+Lastly, the size of this dataset can make some of the modeling techniques run slower than what we were typically encountering in this class.  You may find it helpful to do some of the exploration and model tuning on multiple random samples of smaller size as you decide on useful ranges of parameters/modeling choices, and then only perform a final run of fully debugged and working code on the full dataset.
+
+# Problem 1: univariate and unsupervised analysis (20 points)
+
+Download and read "Census Income" data into R and prepare graphical and numerical summaries of it: e.g. histograms of continuous attributes, contingency tables of categorical variables, scatterplots of continuous attributes with some of the categorical variables indicated by color/symbol shape, etc.  Perform principal components analysis of this data (do you need to scale it prior to that? how would you represent multilevel categorical attributes to be used as inputs for PCA?) and plot observations in the space of the first few principal components with subjects' gender and/or categorized income indicated by color/shape of the symbol.  Perform univariate assessment of associations between outcome we will be modeling and each of the attributes (e.g. t-test or logistic regression for continuous attributes, contingency tables/Fisher exact test/$\chi^2$ test for categorical attributes).  Summarize your observations from these assessments: does it appear that there is association between outcome and predictors? Which predictors seem to be more/less relevant?
+
+
+```{r readData}
+
+CI.training.data <- read.table("adult.data", sep = ",")
+CI.test.data <- read.table("adult.test", sep = ",", skip = 1)
+
+#  The following can be done in the beginning because all the columns are in the same order and levels are the same 
+
+CI.data <- rbind(CI.training.data, CI.test.data)
+
+
+names(CI.data) <- c("age", "work.class", "delete.me", "education", "education.num", "marital.status", "occupation", "relationship", "race", "sex", "capital.gain", "capital.loss", "hours.per.week", "native.country", "income")
+
+# eliminates delete.me
+
+CI.data$delete.me <- NULL
+
+# Gets rid of initial whitespace in factors
+
+for(categ in names(CI.data)) {
+        if(class(CI.data[[categ]]) == "factor") {
+                levels(CI.data[[categ]]) <- trimws(levels(CI.data[[categ]]))
+        }
+}
+
+
+# Changes above levels by removing trailing period
+
+levels(CI.data$income) <- c("<=50K", ">50K", "<=50K", ">50K")
+
+## Removes rows with the factor value "?"
+
+for(categ in names(CI.data)) {
+        if(class(CI.data[[categ]]) == "factor") {
+                CI.data <- CI.data[(CI.data[[categ]] != "?"),]
+        }
+}
+
+```
+
+```{r sparseVarsDoNotUse, echo = FALSE, eval = FALSE}
+
+## The goal this code is trying to accomplish is meaningless because you can deassign a factor level to value of a factor variable.  So I marked eval = false.  I ended up removing sparsely populated factors from the model matrix after the model matrix is created in order to improve the PCA quality.
+
+stop("Don't execute this chunk!  See comment above.")
+
+sparse.threshold <- 0.02  ## Not executed
+sparse.indexes <- numeric()
+
+for(categ.index in 1:length(CI.data)) {
+        if(class(CI.data[[categ.index]]) == "factor") {
+               for(factor.int in 1:length(levels(CI.data[[categ.index]]))) {
+                       num.same.int <- sum(factor.int == as.numeric(CI.data[[categ.index]]))
+                       if(num.same.int/length(CI.data[[categ.index]]) < sparse.threshold) {
+                                sparse.indexes <- c(sparse.indexes, categ.index)
+                       }
+               }
+        }
+}
+
+```
+
+Education number is very hard to interpret numerically, as the effect on income is likely not linear in the way presented, and moreover, the same information is also presented as a categorical variable in the dataset.
+
+Capital gain and capital loss are also very hard to interpret numerically, as there are so many zero values that whether there is capital gain/loss or not is more relevant than the actual quantity.
+
+In addition, native country had some very sparsely populated countries, and these were not caught by the chunk following the following chunk, so I removed the entire categorical variable.
+
+```{r miscellaneousRemove}
+CI.data$education.num <- NULL
+CI.data$capital.gain <- NULL
+CI.data$capital.loss <- NULL
+CI.data$native.country <- NULL
+
+```
+
+```{r modelMatrixSparseRemove}
+
+CI.data.MM <- model.matrix(income ~ ., CI.data)
+
+
+sparse.threshold <- 0.02
+sparse.column.indices <- numeric()
+
+for(i in 1:ncol(CI.data.MM)) {
+        sparsity <- colSums(CI.data.MM)[i]/nrow(CI.data.MM)
+        if(sparsity < sparse.threshold || (1 - sparse.threshold < sparsity && sparsity <= 1)) {
+                sparse.column.indices <- c(sparse.column.indices, i)
+        }
+}
+CI.data.MM <- CI.data.MM[,-sparse.column.indices]
+
+print(paste("Removed", length(sparse.column.indices), "sparsely populated columns"))
+
+```
+
+```{r constantValueRemovDoNotUse, echo = FALSE,  eval = FALSE}
+
+##This is not necessary as the above sparsity chunk takes care of it, without the slow variance calculation
+stop("Don't execute this chunk!  See comment above.")
+
+constant.value.column.index <- numeric()
+for(i in 1:ncol(CI.data.MM)) {
+        if(apply(CI.data.MM, 2, function(x)var(x) == 0)[i]) {
+                constant.value.column.index <- c(constant.value.column.index, i)
+        }
+}
+
+CI.data.MM <- CI.data.MM[,-numeric(0)]
+
+```
+
+In the below, red indicates an income <=50K, and green indicates an income >50K.  For sex, 1 is female and 2 is male.  For races, 1 to 5 are respectively Native American, Asian, Black, Other, and White.
+
+```{r plotSummaries}
+
+
+for(i in 1:4){
+        sample.x <- sample(1:nrow(CI.data), 100)
+        plot(CI.data[sample.x, "age"], CI.data[sample.x, "sex"], col = as.numeric(CI.data[sample.x, "income"]) + 1, main = "Age and Sex to Income")
+}
+for(i in 1:4){
+        sample.x <- sample(1:nrow(CI.data), 400)
+        plot(CI.data[sample.x, "hours.per.week"], CI.data[sample.x, "race"], col = as.numeric(CI.data[sample.x, "income"]) + 1, main = "Hours Per Week and Race to Income")
+}
+
+```
+
+As can be seen above, older men tend to have higher incomes than younger women, and white people who work more hours per week have higher incomes than black people who work fewer hours.
+
+```{r tablesAndHistograms}
+
+
+
+for(categ in names(CI.data)) {
+        if(categ == "income") {next}
+        print("")
+        print("")
+        print(paste("Assocication of", categ, "With Income"))
+        if(class(CI.data[[categ]]) == "factor") {
+                print(table(CI.data$income, CI.data[[categ]]))
+        } else {
+                for(income.level in levels(CI.data$income)) {
+                        print(hist(CI.data[CI.data$income == income.level, categ], main = paste(categ, "given an income of level", income.level)))
+                }
+        }
+}
+
+
+```
+
+```{r PCABiplotFull}
+# The variables are scaled because the units for numeric varables are completely different and there are dummy variables
+
+px <- prcomp(CI.data.MM, scale = TRUE)
+
+biplot(px, xlabs=rep(".", nrow(CI.data.MM)))
+```
+
+This biplot is too involved, so below are four biplots of only 400 sampled points and the arrows removed.
+
+```{r PCABiplotsPartial}
+for(i in 1:4){
+        sample.x <- sample(1:nrow(px$x), 400)
+        plot(px$x[sample.x,1],px$x[sample.x,2], col = as.numeric(CI.data$income) + 1)
+}
+```
+
+As shown above, the first two principal components do not seem to differentiate by income.  In the above plots, red indicates an income of less than or equal to `$50K` and green an income of greater than `$50K`.
+
+```{r UnivariateAsessment}
+continuous.var.names <- character()
+
+for(categ in names(CI.data)) {
+        if(categ != "income" && class(CI.data[[categ]]) != "factor") {
+                print(categ)
+                categ.lm <- glm(CI.data$income ~ CI.data[[categ]], family = "binomial")
+                print(summary(categ.lm))
+        }
+}
+```
+
+From these analyses, it appears that many of these variables are associated with income levels.  In particular, age, sex, education level, marital status, work class, occupation, and race seem to have a strong association, whereas hours per week worked shows a weaker association.  As shown by the logistic regression, the association is clearly there, but the plot of income to hours per week worked and race shows that this association is weak.  This might be because the values themselves of hours per week tend to be very similar, usually between 20 and 60.
+
+
+# Problem 2: logistic regression (25 points)
+
+Develop logistic regression model of the outcome as a function of multiple predictors in the model.  Which variables are significantly associated with the outcome?  Test model performance on multiple splits of data into training and test subsets, summarize it in terms of accuracy/error, sensitivity/specificity and compare to the performance of other methods reported in the dataset description.
+
+The sensitivity and specificity cannot be defined because there is no null and alternative hypthesis, i.e., no "yes" or "no" outcome.  However, if you arbitrarily choose <=50K as the "no" or null hypothesis and >50K as the "yes" or alternative hypothesis, then the sensitivity and specificity are as follows:
+```{r logisticRegression}
+
+iFolds <- 10
+logit.accuracies <- numeric()
+logit.sensitivities <- numeric()
+logit.specificities <- numeric()
+train <- sample(1:iFolds, nrow(CI.data), replace = TRUE)
+for (iFold in 1:iFolds) {
+        glm.fit <- glm(income ~ ., data = CI.data[train != iFold,], family = "binomial")
+        glm.probs <- predict(glm.fit, newdata = CI.data[train == iFold,], type = "response")
+        glm.pred <- rep("<=50K", sum(train == iFold))
+        glm.pred[glm.probs > 0.5] <- ">50K"
+
+        correct <- (glm.pred == CI.data[train == iFold, "income"])
+        logit.accuracies[iFold] <- sum(correct)*100/length(CI.data[train == iFold, "income"])
+        TP <- sum(CI.data[train == iFold, "income"] == ">50K" & glm.pred == ">50K")
+        TN <- sum(CI.data[train == iFold, "income"] == "<=50K" & glm.pred == "<=50K")
+        FP <- sum(CI.data[train == iFold, "income"] == "<=50K"  & glm.pred == ">50K")
+        FN <- sum(CI.data[train == iFold, "income"] == ">50K" & glm.pred == "<=50K")
+        P <- TP + FN
+        N <- TN + FP
+## TP/FP true/false positives (predicted >50K)
+## TN/FN true/false negatives (predicted <=50K)
+
+        logit.sensitivities[iFold] <- 100*TP/P
+        logit.specificities[iFold] <- 100*TN/N
+}
+
+print("Accuracy for each fold")
+print(logit.accuracies)
+print("Average accuracy")
+print(mean(logit.accuracies))
+print("Sensitivity for each fold")
+print(logit.sensitivities)
+print("Average sensitivity")
+print(mean(logit.sensitivities))
+print("Specificity for each fold")
+print(logit.specificities)
+print("Average specificity")
+print(mean(logit.specificities))
+
+
+```
+Above are the average accuracy, sensitivity, and specificity for the logistic fit after K-fold cross-validation.
+
+```{r glmSummary}
+summary(glm.fit)
+```
+
+From the above summary, it seems that all variables were relevant in predicting income.  Notably, other race and black race were less relevant.  This may be because for the most part, being black and being white are colinear.  With the few exceptions of the other three races, if one person is not white in the data, he/she is likely black.
+
+
+# Problem 3: random forest (25 points)
+
+Develop random forest model of the categorized income. Present variable importance plots and comment on relative importance of different attributes in the model.  Did attributes showing up as more important in random forest model also appear as significantly associated with the outcome by logistic regression?  Test model performance on multiple splits of data into training and test subsets, compare test and out-of-bag error estimates, summarize model performance in terms of accuracy/error, sensitivity/specificity and compare to the performance of other methods reported in the dataset description.
+
+
+```{r randomForest}
+library(randomForest)
+
+iFolds <- 10
+rf.accuracies <- numeric()
+rf.sensitivities <- numeric()
+rf.specificities <- numeric()
+train <- sample(1:iFolds, nrow(CI.data), replace = TRUE)
+
+for (iFold in 1:iFolds) {
+        rf.fit <- randomForest(income ~ ., data = CI.data[train != iFold,], importance = TRUE, ntree = 50)
+        rf.pred <- predict(rf.fit, newdata = CI.data[train == iFold,])
+
+        correct <- (rf.pred == CI.data[train == iFold, "income"])
+        rf.accuracies[iFold] <- sum(correct)*100/length(CI.data[train == iFold, "income"])
+        TP <- sum(CI.data[train == iFold, "income"] == ">50K" & rf.pred == ">50K")
+        TN <- sum(CI.data[train == iFold, "income"] == "<=50K" & rf.pred == "<=50K")
+        FP <- sum(CI.data[train == iFold, "income"] == "<=50K"  & rf.pred == ">50K")
+        FN <- sum(CI.data[train == iFold, "income"] == ">50K" & rf.pred == "<=50K")
+        P <- TP + FN
+        N <- TN + FP
+## TP/FP true/false positives (predicted >50K)
+## TN/FN true/false negatives (predicted <=50K)
+
+        rf.sensitivities[iFold] <- 100*TP/P
+        rf.specificities[iFold] <- 100*TN/N
+}
+
+print("Accuracy for each fold")
+print(rf.accuracies)
+print("Average accuracy")
+print(mean(rf.accuracies))
+print("Sensitivity for each fold")
+print(rf.sensitivities)
+print("Average sensitivity")
+print(mean(rf.sensitivities))
+print("Specificity for each fold")
+print(rf.specificities)
+print("Average specificity")
+print(mean(rf.specificities))
+
+```
+
+
+```{r sensitivitySpecificity}
+
+## The following is based on OOB data rather than K-fold cross-validation.  Since these were not used in making the random forest model, they are in fact a better measure of the test error
+
+rf.oob.sensitivity <- 1 - rf.fit$confusion[[">50K", "class.error"]]
+rf.oob.specificity <- 1 - rf.fit$confusion[["<=50K", "class.error"]]
+rf.oob.accuracy <- sum(diag(rf.fit$confusion[1:2,1:2]))/sum(colSums(rf.fit$confusion[,1:2]))
+print(paste("Random Forest OOB Sensitivity:", rf.oob.sensitivity))
+print(paste("Random Forest OOB Specificity:", rf.oob.specificity))
+print(paste("Random Forest OOB Accuracy", rf.oob.accuracy))
+```
+
+As shown above, the OOB accuracy is very similar to the cross-validation accuracy, further demonstrating the quality of this model.
+
+```{r rfImportance}
+importance(rf.fit)
+```
+
+As shown by the importance measures, race is of little importance, similar to what was discussed in problem two.  Hours per week is also of low importance, as was discussed in problem one.  Surprisingly enough, age also is of low importance in the random forest model.
+
+
+# Problem 4: SVM (25 points)
+
+Develop SVM model of this data choosing parameters (e.g. choice of kernel, cost, etc.) that appear to yield better performance.  Test model performance on multiple splits of data into training and test subsets, summarize model performance in terms of accuracy/error, sensitivity/specificity and compare to the performance of other methods reported in the dataset description.
+
+```{r svm}
+library(e1071)
+
+svm.accuracies <- numeric()
+svm.sensitivities <- numeric()
+svm.specificities <- numeric()
+
+for (i in 1:3) {
+        train <- sample(1:nrow(CI.data), 1000)
+        svm.fit <- tune(svm, income ~ ., data = CI.data[train,], kernel = "radial")$best.model
+        svm.pred <- predict(svm.fit, CI.data[-train,])
+        
+        correct <- (svm.pred == CI.data[-train, "income"])
+        svm.accuracies[i] <- sum(correct)*100/length(CI.data[-train, "income"])
+        TP <- sum(CI.data[-train, "income"] == ">50K" & svm.pred == ">50K")
+        TN <- sum(CI.data[-train, "income"] == "<=50K" & svm.pred == "<=50K")
+        FP <- sum(CI.data[-train, "income"] == "<=50K"  & svm.pred == ">50K")
+        FN <- sum(CI.data[-train, "income"] == ">50K" & svm.pred == "<=50K")
+        P <- TP + FN
+        N <- TN + FP
+## TP/FP true/false positives (predicted >50K)
+## TN/FN true/false negatives (predicted <=50K)
+
+        svm.sensitivities[i] <- 100*TP/P
+        svm.specificities[i] <- 100*TN/N
+}
+
+print("Accuracy for each fold")
+print(svm.accuracies)
+print("Average accuracy")
+print(mean(svm.accuracies))
+print("Sensitivity for each fold")
+print(svm.sensitivities)
+print("Average sensitivity")
+print(mean(svm.sensitivities))
+print("Specificity for each fold")
+print(svm.specificities)
+print("Average specificity")
+print(mean(svm.specificities))
+```
+
+# Problem 5: compare logistic regression, random forest and SVM model performance (5 points)
+
+Compare performance of the models developed above (logistic regression, random forest, SVM) in terms of their accuracy, error and sensitivity/specificity.  Comment on differences and similarities between them.
+
+As shown above in problems 2-4, the average accuracies of the logistic, random forest, and SVM models are 83.2%, 83.2% (0.02% less), and 82.1 respectively.  The models perform similarly.  The lower accuracy in the SVM models may be because K-fold cross-validation could not be performed due to computing constraints.  The error is simply 100% minus the accuracy, yielding 16.8%, 16.8%, and 17.9%.
+
+The respective sensitivities were 56.5%, 59.6%, and 44.9%.  This means that most models often failed to predict higher income when it was present.  This is consistent with the accuracy because there were relatively few higher income individuals.
+
+The respective specificities were 90.2%, 90.1%, and 94.3%.  This means the models almost always successfully identified a lower income individual.
+
+# Extra 10 points: KNN model
+
+Develop KNN model for this data, evaluate its performance for different values of $k$ on different splits of the data into training and test and compare it to the performance of other methods reported in the dataset description.  Notice that this dataset includes many categorical variables as well as continuous attributes measured on different scales, so that the distance has to be defined to be meaningful (probably avoiding subtraction of the numerical values of multi-level factors directly or adding differences between untransformed age and capital gain/loss attributes).
+
+# Extra 15 points: variable importance in SVM
+
+SVM does not appear to provide readily available tools for judging relative importance of different attributes in the model.  Please evaluate here an approach similar to that employed by random forest where importance of any given attribute is measured by the decrease in model performance upon randomization of the values for this attribute.

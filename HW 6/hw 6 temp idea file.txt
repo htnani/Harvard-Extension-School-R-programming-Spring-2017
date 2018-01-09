@@ -1,0 +1,1 @@
+Problem 1a.  The implication, if one mean and variance is much higher, is that it will have a disproportionate effect on the principal component loading vectors.  The principal component score vectors will be disproportionally affected by the predictor with high mean and variance.
