@@ -1,7 +1,8 @@
 ---
 title: 'CSCI E-63C: Final Exam'
-output:
+output: 
   html_document:
+    keep_md: true
     toc: true
 ---
 

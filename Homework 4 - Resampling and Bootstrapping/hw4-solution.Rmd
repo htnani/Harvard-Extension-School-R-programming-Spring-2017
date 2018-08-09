@@ -1,6 +1,8 @@
 ---
 title: "CSCI E-63C Week 4 Assignment"
-output: html_document
+output: 
+  html_document:
+    keep_md: true
 ---
 
 ```{r setup, include=FALSE}

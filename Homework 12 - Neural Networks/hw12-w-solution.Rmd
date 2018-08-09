@@ -2,6 +2,7 @@
 title: "CSCI E-63C Week 12 assignment"
 output: 
   html_document:
+    keep_md: true
     toc: true
 ---
 
