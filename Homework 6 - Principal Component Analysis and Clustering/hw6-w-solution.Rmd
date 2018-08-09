@@ -99,7 +99,7 @@ t(matrix(1:6,ncol=3))
 
 Present results of PCA on transposed world health statistics dataset in the form of scree and biplot, describe the results.
 
-```{r pcatransposed}
+```{r pcatransposed, eval=FALSE}
 pr.out2 <- prcomp(t(whsAnnBdatNum), scale = FALSE)
 plot(pr.out2)
 biplot(pr.out2, scale = 0)
