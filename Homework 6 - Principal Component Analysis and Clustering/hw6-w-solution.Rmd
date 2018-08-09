@@ -58,7 +58,7 @@ The consequences of this enormous variation in attribute means and variaces for 
 
 Perform PCA on *untransformed* data in WHS dataset (remember, you can use R function `prcomp` for that).  Generate scree plot of PCA results (by calling `plot` on the result of `prcomp`) and plot of the two first principal components using `biplot`.  Which variables seem to predominantly drive the results of PCA when applied to untransformed data?
 
-```{r untransformedPCA}
+```{r untransformedPCA, eval=FALSE}
 pr.out <- prcomp(whsAnnBdatNum, scale = FALSE)
 plot(pr.out)
 biplot(pr.out, scale = 0)
