@@ -111,7 +111,7 @@ The scree plot continues to show that the first principal component, the one inf
 
 Perform PCA on scaled world health statistics data.  To do that you can either use as input to `prcomp` the output of`scale` as applied to the WHS data matrix or call `prcomp` with parameter `scale` set to `TRUE`.  Present results of PCA in the form of scree plot and plot of the first two principal components.  How do they compare to those generated on the results of PCA of *untransformed* data?  What dataset attributes contribute the most (by absolute value) to the top two PCs?  What are the signs of those contributions?  How would you interpret that?
 
-```{r scaledPCA}
+```{r scaledPCA, eval=FALSE}
 pr.out3 <- (prcomp(whsAnnBdatNum, scale = TRUE))
 pr.out3$rotation[1:2]
 plot(pr.out3)
@@ -133,7 +133,7 @@ Most of the countries fall near the principal component two axis.  We can look a
 
 Finally, perform PCA on *transposed* scaled WHS dataset -- present results in the form of scree plot and biplot and discuss these presentations.
 
-```{r transposedScaledPlots}
+```{r transposedScaledPlots, eval=FALSE}
 pr.out4 <- (prcomp(t(whsAnnBdatNum), scale = TRUE))
 plot(pr.out4)
 plot(pr.out4$x[,1:2])

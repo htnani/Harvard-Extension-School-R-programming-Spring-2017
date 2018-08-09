@@ -331,13 +331,7 @@ Using `knn` from library `class`, calculate confusion matrix, (training) error r
 
 ```r
 library(FNN)
-```
 
-```
-## Error in library(FNN): there is no package called 'FNN'
-```
-
-```r
 x <- banknote.data[names(banknote.data) != "Counterfeit"]
 y <- ifelse(banknote.data$Counterfeit == 0, "Not Counterfeit", "Counterfeit")
 knn.preds <- matrix(nrow = length(banknote.data$Counterfeit), ncol = 10)
@@ -345,13 +339,6 @@ knn.preds <- matrix(nrow = length(banknote.data$Counterfeit), ncol = 10)
 for(k in 1:10) {
         knn.preds[,k] <- knn(train = x, test = x, cl = y, k = k)
 }
-```
-
-```
-## Error in knn(train = x, test = x, cl = y, k = k): could not find function "knn"
-```
-
-```r
 ##print(knn.preds)
 for(k in 1:10) {
         print(paste("K = ", k, sep = ""))
@@ -363,25 +350,55 @@ for(k in 1:10) {
 
 ```
 ## [1] "K = 1"
-## < table of extent 0 x 2 >
+##          true
+## predicted Counterfeit Not Counterfeit
+##         1         610               0
+##         2           0             762
 ## [1] "K = 2"
-## < table of extent 0 x 2 >
+##          true
+## predicted Counterfeit Not Counterfeit
+##         1         610               1
+##         2           0             761
 ## [1] "K = 3"
-## < table of extent 0 x 2 >
+##          true
+## predicted Counterfeit Not Counterfeit
+##         1         610               1
+##         2           0             761
 ## [1] "K = 4"
-## < table of extent 0 x 2 >
+##          true
+## predicted Counterfeit Not Counterfeit
+##         1         610               1
+##         2           0             761
 ## [1] "K = 5"
-## < table of extent 0 x 2 >
+##          true
+## predicted Counterfeit Not Counterfeit
+##         1         610               0
+##         2           0             762
 ## [1] "K = 6"
-## < table of extent 0 x 2 >
+##          true
+## predicted Counterfeit Not Counterfeit
+##         1         610               0
+##         2           0             762
 ## [1] "K = 7"
-## < table of extent 0 x 2 >
+##          true
+## predicted Counterfeit Not Counterfeit
+##         1         610               0
+##         2           0             762
 ## [1] "K = 8"
-## < table of extent 0 x 2 >
+##          true
+## predicted Counterfeit Not Counterfeit
+##         1         610               0
+##         2           0             762
 ## [1] "K = 9"
-## < table of extent 0 x 2 >
+##          true
+## predicted Counterfeit Not Counterfeit
+##         1         610               0
+##         2           0             762
 ## [1] "K = 10"
-## < table of extent 0 x 2 >
+##          true
+## predicted Counterfeit Not Counterfeit
+##         1         610               0
+##         2           0             762
 ```
 
 ```r
@@ -393,16 +410,16 @@ for(k in 1:10) {
 ```
 
 ```
-## [1] "Correct predictions with K = 1 (accuracy): NA(NA%)\n"
-## [1] "Correct predictions with K = 2 (accuracy): NA(NA%)\n"
-## [1] "Correct predictions with K = 3 (accuracy): NA(NA%)\n"
-## [1] "Correct predictions with K = 4 (accuracy): NA(NA%)\n"
-## [1] "Correct predictions with K = 5 (accuracy): NA(NA%)\n"
-## [1] "Correct predictions with K = 6 (accuracy): NA(NA%)\n"
-## [1] "Correct predictions with K = 7 (accuracy): NA(NA%)\n"
-## [1] "Correct predictions with K = 8 (accuracy): NA(NA%)\n"
-## [1] "Correct predictions with K = 9 (accuracy): NA(NA%)\n"
-## [1] "Correct predictions with K = 10 (accuracy): NA(NA%)\n"
+## [1] "Correct predictions with K = 1 (accuracy): 1372(100%)\n"
+## [1] "Correct predictions with K = 2 (accuracy): 1371(99.9%)\n"
+## [1] "Correct predictions with K = 3 (accuracy): 1371(99.9%)\n"
+## [1] "Correct predictions with K = 4 (accuracy): 1371(99.9%)\n"
+## [1] "Correct predictions with K = 5 (accuracy): 1372(100%)\n"
+## [1] "Correct predictions with K = 6 (accuracy): 1372(100%)\n"
+## [1] "Correct predictions with K = 7 (accuracy): 1372(100%)\n"
+## [1] "Correct predictions with K = 8 (accuracy): 1372(100%)\n"
+## [1] "Correct predictions with K = 9 (accuracy): 1372(100%)\n"
+## [1] "Correct predictions with K = 10 (accuracy): 1372(100%)\n"
 ```
 
 ```r
@@ -429,74 +446,74 @@ for(k in 1:10) {
 
 ```
 ## [1] "KNN, K = 1"
-## [1] "TPR (sensitivity) = TP/P, K = 1: NA%"
-## [1] "TNR (specificity) = TN/N, K = 1: NA%"
-## [1] "PPV (precision) = TP/(TP+FP), K = 1: NA%"
-## [1] "FDR (false discovery) = FP/(TP+FP), K = 1: NA%"
-## [1] "FPR = FP/N = 1-TNR, K = 1: NA%\n"
+## [1] "TPR (sensitivity) = TP/P, K = 1: 100%"
+## [1] "TNR (specificity) = TN/N, K = 1: 100%"
+## [1] "PPV (precision) = TP/(TP+FP), K = 1: 100%"
+## [1] "FDR (false discovery) = FP/(TP+FP), K = 1: 0%"
+## [1] "FPR = FP/N = 1-TNR, K = 1: 0%\n"
 ## [1] ""
 ## [1] "KNN, K = 2"
-## [1] "TPR (sensitivity) = TP/P, K = 2: NA%"
-## [1] "TNR (specificity) = TN/N, K = 2: NA%"
-## [1] "PPV (precision) = TP/(TP+FP), K = 2: NA%"
-## [1] "FDR (false discovery) = FP/(TP+FP), K = 2: NA%"
-## [1] "FPR = FP/N = 1-TNR, K = 2: NA%\n"
+## [1] "TPR (sensitivity) = TP/P, K = 2: 100%"
+## [1] "TNR (specificity) = TN/N, K = 2: 99.9%"
+## [1] "PPV (precision) = TP/(TP+FP), K = 2: 99.8%"
+## [1] "FDR (false discovery) = FP/(TP+FP), K = 2: 0.164%"
+## [1] "FPR = FP/N = 1-TNR, K = 2: 0.131%\n"
 ## [1] ""
 ## [1] "KNN, K = 3"
-## [1] "TPR (sensitivity) = TP/P, K = 3: NA%"
-## [1] "TNR (specificity) = TN/N, K = 3: NA%"
-## [1] "PPV (precision) = TP/(TP+FP), K = 3: NA%"
-## [1] "FDR (false discovery) = FP/(TP+FP), K = 3: NA%"
-## [1] "FPR = FP/N = 1-TNR, K = 3: NA%\n"
+## [1] "TPR (sensitivity) = TP/P, K = 3: 100%"
+## [1] "TNR (specificity) = TN/N, K = 3: 99.9%"
+## [1] "PPV (precision) = TP/(TP+FP), K = 3: 99.8%"
+## [1] "FDR (false discovery) = FP/(TP+FP), K = 3: 0.164%"
+## [1] "FPR = FP/N = 1-TNR, K = 3: 0.131%\n"
 ## [1] ""
 ## [1] "KNN, K = 4"
-## [1] "TPR (sensitivity) = TP/P, K = 4: NA%"
-## [1] "TNR (specificity) = TN/N, K = 4: NA%"
-## [1] "PPV (precision) = TP/(TP+FP), K = 4: NA%"
-## [1] "FDR (false discovery) = FP/(TP+FP), K = 4: NA%"
-## [1] "FPR = FP/N = 1-TNR, K = 4: NA%\n"
+## [1] "TPR (sensitivity) = TP/P, K = 4: 100%"
+## [1] "TNR (specificity) = TN/N, K = 4: 99.9%"
+## [1] "PPV (precision) = TP/(TP+FP), K = 4: 99.8%"
+## [1] "FDR (false discovery) = FP/(TP+FP), K = 4: 0.164%"
+## [1] "FPR = FP/N = 1-TNR, K = 4: 0.131%\n"
 ## [1] ""
 ## [1] "KNN, K = 5"
-## [1] "TPR (sensitivity) = TP/P, K = 5: NA%"
-## [1] "TNR (specificity) = TN/N, K = 5: NA%"
-## [1] "PPV (precision) = TP/(TP+FP), K = 5: NA%"
-## [1] "FDR (false discovery) = FP/(TP+FP), K = 5: NA%"
-## [1] "FPR = FP/N = 1-TNR, K = 5: NA%\n"
+## [1] "TPR (sensitivity) = TP/P, K = 5: 100%"
+## [1] "TNR (specificity) = TN/N, K = 5: 100%"
+## [1] "PPV (precision) = TP/(TP+FP), K = 5: 100%"
+## [1] "FDR (false discovery) = FP/(TP+FP), K = 5: 0%"
+## [1] "FPR = FP/N = 1-TNR, K = 5: 0%\n"
 ## [1] ""
 ## [1] "KNN, K = 6"
-## [1] "TPR (sensitivity) = TP/P, K = 6: NA%"
-## [1] "TNR (specificity) = TN/N, K = 6: NA%"
-## [1] "PPV (precision) = TP/(TP+FP), K = 6: NA%"
-## [1] "FDR (false discovery) = FP/(TP+FP), K = 6: NA%"
-## [1] "FPR = FP/N = 1-TNR, K = 6: NA%\n"
+## [1] "TPR (sensitivity) = TP/P, K = 6: 100%"
+## [1] "TNR (specificity) = TN/N, K = 6: 100%"
+## [1] "PPV (precision) = TP/(TP+FP), K = 6: 100%"
+## [1] "FDR (false discovery) = FP/(TP+FP), K = 6: 0%"
+## [1] "FPR = FP/N = 1-TNR, K = 6: 0%\n"
 ## [1] ""
 ## [1] "KNN, K = 7"
-## [1] "TPR (sensitivity) = TP/P, K = 7: NA%"
-## [1] "TNR (specificity) = TN/N, K = 7: NA%"
-## [1] "PPV (precision) = TP/(TP+FP), K = 7: NA%"
-## [1] "FDR (false discovery) = FP/(TP+FP), K = 7: NA%"
-## [1] "FPR = FP/N = 1-TNR, K = 7: NA%\n"
+## [1] "TPR (sensitivity) = TP/P, K = 7: 100%"
+## [1] "TNR (specificity) = TN/N, K = 7: 100%"
+## [1] "PPV (precision) = TP/(TP+FP), K = 7: 100%"
+## [1] "FDR (false discovery) = FP/(TP+FP), K = 7: 0%"
+## [1] "FPR = FP/N = 1-TNR, K = 7: 0%\n"
 ## [1] ""
 ## [1] "KNN, K = 8"
-## [1] "TPR (sensitivity) = TP/P, K = 8: NA%"
-## [1] "TNR (specificity) = TN/N, K = 8: NA%"
-## [1] "PPV (precision) = TP/(TP+FP), K = 8: NA%"
-## [1] "FDR (false discovery) = FP/(TP+FP), K = 8: NA%"
-## [1] "FPR = FP/N = 1-TNR, K = 8: NA%\n"
+## [1] "TPR (sensitivity) = TP/P, K = 8: 100%"
+## [1] "TNR (specificity) = TN/N, K = 8: 100%"
+## [1] "PPV (precision) = TP/(TP+FP), K = 8: 100%"
+## [1] "FDR (false discovery) = FP/(TP+FP), K = 8: 0%"
+## [1] "FPR = FP/N = 1-TNR, K = 8: 0%\n"
 ## [1] ""
 ## [1] "KNN, K = 9"
-## [1] "TPR (sensitivity) = TP/P, K = 9: NA%"
-## [1] "TNR (specificity) = TN/N, K = 9: NA%"
-## [1] "PPV (precision) = TP/(TP+FP), K = 9: NA%"
-## [1] "FDR (false discovery) = FP/(TP+FP), K = 9: NA%"
-## [1] "FPR = FP/N = 1-TNR, K = 9: NA%\n"
+## [1] "TPR (sensitivity) = TP/P, K = 9: 100%"
+## [1] "TNR (specificity) = TN/N, K = 9: 100%"
+## [1] "PPV (precision) = TP/(TP+FP), K = 9: 100%"
+## [1] "FDR (false discovery) = FP/(TP+FP), K = 9: 0%"
+## [1] "FPR = FP/N = 1-TNR, K = 9: 0%\n"
 ## [1] ""
 ## [1] "KNN, K = 10"
-## [1] "TPR (sensitivity) = TP/P, K = 10: NA%"
-## [1] "TNR (specificity) = TN/N, K = 10: NA%"
-## [1] "PPV (precision) = TP/(TP+FP), K = 10: NA%"
-## [1] "FDR (false discovery) = FP/(TP+FP), K = 10: NA%"
-## [1] "FPR = FP/N = 1-TNR, K = 10: NA%\n"
+## [1] "TPR (sensitivity) = TP/P, K = 10: 100%"
+## [1] "TNR (specificity) = TN/N, K = 10: 100%"
+## [1] "PPV (precision) = TP/(TP+FP), K = 10: 100%"
+## [1] "FDR (false discovery) = FP/(TP+FP), K = 10: 0%"
+## [1] "FPR = FP/N = 1-TNR, K = 10: 0%\n"
 ## [1] ""
 ```
 
@@ -664,20 +681,9 @@ for (k in ks) {
 }
 ```
 
-```
-## Error in knn(train = x, test = banknote.data[train == iFold, names(banknote.data) != : could not find function "knn"
-```
-
 
 ```r
 library(ggplot2)
-```
-
-```
-## Error in library(ggplot2): there is no package called 'ggplot2'
-```
-
-```r
 dfTmp <- NULL
 list.K.models <- list()
 for(k in ks) {
@@ -706,9 +712,7 @@ for (model in list.models) {
 ggplot(dfTmp,aes(x=model,y=accuracy,colour=subs)) + geom_boxplot()
 ```
 
-```
-## Error in ggplot(dfTmp, aes(x = model, y = accuracy, colour = subs)): could not find function "ggplot"
-```
+![plot of chunk CVplot](figure/CVplot-1.png)
 
 ```r
 dfTmp <- NULL
@@ -734,9 +738,7 @@ for (model in list.models) {
 ggplot(dfTmp,aes(x=model,y=specificity,colour=subs)) + geom_boxplot()
 ```
 
-```
-## Error in ggplot(dfTmp, aes(x = model, y = specificity, colour = subs)): could not find function "ggplot"
-```
+![plot of chunk CVplot](figure/CVplot-2.png)
 
 ```r
 dfTmp <- NULL
@@ -762,9 +764,7 @@ for (model in list.models) {
 ggplot(dfTmp,aes(x=model,y=sensitivity,colour=subs)) + geom_boxplot()
 ```
 
-```
-## Error in ggplot(dfTmp, aes(x = model, y = sensitivity, colour = subs)): could not find function "ggplot"
-```
+![plot of chunk CVplot](figure/CVplot-3.png)
 
 
 The QDA performs better than the LDA on multiple metrics, incidating that the true Bayes decision boundary is not straight.  This confirms what we found in part 2.  In addition, the higher values of K in KNN perform worse.  At these high values of K, the model likely has very high bias, and underfits the data.  As expected from theory, KNN at K = 1 performs perfectly.
